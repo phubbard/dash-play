@@ -36,6 +36,9 @@ My setup is OSX, minor edits will be needed for Linux/*BSD.
 5. Note MAC address(es)
 6. Edit run.py script with MACs from 5
 
+# sudo python? really?
+
+
 # Running it
 
 1. Start iTunes
@@ -46,6 +49,8 @@ My setup is OSX, minor edits will be needed for Linux/*BSD.
 # Bugs and notes
 
 1. Seems to not always select the Airplay. Don't understand this yet.
+2. The scapy code requires an enter after running to dismiss a warning. Working on this.
+3. the script will require 'assistive' access to drive iTunes. System Prefs.
 
 # Read the applescript
 
