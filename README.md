@@ -50,3 +50,4 @@ My setup is OSX, minor edits will be needed for Linux/*BSD.
 # Read the applescript
 
 The .scpt files are binary, so I've also included the text in applescript.txt
+
