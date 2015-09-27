@@ -5,14 +5,27 @@
 
 import logging
 from datetime import datetime
+from ConfigParser import SafeConfigParser
+
+from flask import Flask, make_response
 
 import requests
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s %(message)s')
 log = logging.getLogger(__name__)
 
+app = Flask(__name__)
+
+config = SafeConfigParser()
+config.read('config.ini')
+
 # Where the iTunes API is running
-ITUNES = 'http://thor.phfactor.net:8181'
+ITUNES = config.get('itunes', 'api_url')
+
+# Button MAC addresses
+buttons = {config.get('buttons', 'glad'): 'glad',
+           config.get('buttons', 'bounty') : 'bounty',
+           config.get('buttons', 'tide'): 'tide'}
 
 # AirPort speaker names
 KITCHEN = 'Kitchen'
@@ -88,13 +101,9 @@ def start_playlist(playlist_name):
     rv = requests.put(ITUNES + '/playlists/' + find_playlist_id(playlist_name) + '/play')
 
 
-
+##########################################################################################
+# Top-level button logic    
 def glad_button():
-    if is_playing():
-        log.info('Stopping playback via Glad')
-        stop()
-        return
-
     single_speaker_on(KITCHEN)
 
     d = datetime.now()
@@ -108,11 +117,53 @@ def glad_button():
         log.info('Glad pressed, later, starting evening playlist')
         start_playlist('Dishes')
     
-def bounty_button():
-    if is_playing():
-        log.info('Stopping playback via Bounty')
-        stop()
-        return
 
+def bounty_button():
     single_speaker_on(KIDROOM)
-    start_playlist('Bed')
+    d = dateime.now()
+    if d.hour < 19:
+        start_playlist('Anna dance')
+    else:
+        start_playlist('Bed')
+
+
+def tide_button():
+    single_speaker_on(GARAGE)
+    start_playlist('Basic rock')
+
+
+def lookup_button(hw_addr):
+    if buttons.has_key(hw_addr):
+        return buttons[hw_addr]
+    return None
+
+
+############################################################################################
+# Web logic - gets called by the root-running daemon, just gets button events
+@app.route('/button/<hw_addr>', methods=['PUT'])
+def button_event(hw_addr):
+
+    name = lookup_button(hw_addr)
+    if not name:
+        log.warn('Ignoring unknown address')
+        return make_response('Ignored')
+
+    log.info('Got button event for ' + hw_addr + ' -> ' + name)
+
+    if is_playing():
+        stop()
+        return make_response('Stopping')
+
+    # TODO roll into a dictionary
+    if name is 'glad':
+        glad_button()
+    if name is 'tide':
+        tide_button()
+    if name is 'bounty':
+        bounty_button()
+
+
+###
+if __name__ == '__main__':
+    app.run(port=4321, host='0.0.0.0', debug=True, threaded=True)
+

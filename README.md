@@ -3,56 +3,49 @@
 These scripts let me use the cheap Dash buttons to trigger music and podcasts. It Feels Like The Future (tm)!
 
 ## How It's Made
-Python + AppleScript.
+Python and more Python. 
+
+## Root and Other Bad Things
+The packet sniffing code requires root in order to listen for ARP packets, so to reduce the risks I broke the code into
+two pieces:
+
+ 1. run.py must be run as root, and just re-sends any button (or other ARP packet) out via HTTP. Ignores any TCP or HTTP errors.
+ 2. itunes.py Uses Flask to listen to http://localhost:4321 and has all of the itunes control and button logic.
+
+I like this much better. You can run the ./run.py script using forever or nohup and it shouldn't require any changes. 
+
+The itunes.py script looks into config.ini for
+
+ 1. URL of the [iTunes API](https://github.com/maddox/itunes-api) host
+ 2. Button names and MAC addresses
+
+The logic in itunes.py should, I hope, be clear and simple.
+
+## How to Run It
+
+1. sudo nohup ./run.py &
+2. ./itunes.py (or nohup)
 
 ## What It Does
 
-Currently, my 'Glad' button script
+Changes speakers and starts playlists, some according to the hour of the day.
 
-1. Switches to the kids' (AirPlay) speakers
-2. Turns on shuffle, by song
-3. Plays playlist 'Bed'
-
-The 'Bounty' button script
-
-1. Updates all podcasts
-2. Selects two AirPlay speakers
-3. Turns on shuffle, by song
-4. Plays playlist 'dishes'
-
-Next I plan to use another button to play my Marketplace podcasts, but that's why step 1 is there. Soon.
+On all buttons, if playing they stop playback. Wife request that feature.
 
 # Requirements
 
-My setup is OSX, minor edits will be needed for Linux/*BSD.
+1. iTunes API running on network-accesible machine. I'm running it on my el-cheapo Mini.
+2. These scripts, probably on Linux. The scapy library seems to hate OSX, so I'm using a Raspberry Pi 2 to run these. Works great.
 
 # Setup and installation
 
 0. Setup Dash buttons as per [this link](https://medium.com/@edwardbenson/how-i-hacked-amazon-s-5-wifi-button-to-track-baby-data-794214b0bdd8)
-1. brew install libdnet
-2. pip install -r requirements.txt
+1. brew install libdnet2. pip install -r requirements.txt
 3. sudo python ./arp.py
 4. Press Dash button
 5. Note MAC address(es)
-6. Edit run.py script with MACs from 5
-
-# sudo python? really?
-
-
-# Running it
-
-1. Start iTunes
-2. From a terminal, run
-   sudo ./run.py
-3. Press a button!
+6. Edit config.ini file with MACs from 5
 
 # Bugs and notes
 
-1. Seems to not always select the Airplay. Don't understand this yet.
-2. The scapy code requires an enter after running to dismiss a warning. Working on this.
-3. the script will require 'assistive' access to drive iTunes. System Prefs.
-
-# Read the applescript
-
-The .scpt files are binary, so I've also included the text in applescript.txt
 

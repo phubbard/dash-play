@@ -8,25 +8,29 @@
 
 import site
 site.addsitedir("/usr/local/lib/python2.7/site-packages")
-import os
-import logging
-from datetime import datetime
 
+import requests
 from scapy.all import *
 
-from itunes import glad_button, bounty_button
+
+def send_push(hw_addr):
+  """
+  Decouple root-required code from userland by using HTTP over TCP. Remote end runs as user.
+  """
+  # Basic sanity check - 6 octets plus 5 colons
+  assert(len(hw_addr) <= 17)
+
+  try:
+    requests.put('http://localhost:4321/button/' + hw_addr)
+  except:
+    pass
 
 
 def arp_display(pkt):
   if pkt[ARP].op == 1: #who-has (request)
     if pkt[ARP].psrc == '0.0.0.0': # ARP Probe
-      d = datetime.now()
-      if pkt[ARP].hwsrc == '74:c2:46:a4:4c:e7': # Glad
-        glad_button()
-      elif pkt[ARP].hwsrc == '74:c2:46:3e:94:78': # Bounty
-        bounty_button()
-      else:
-        print "ARP Probe from unknown device: " + pkt[ARP].hwsrc
+      send_push(pkt[ARP].hwsrc)
+
 
 print sniff(prn=arp_display, filter="arp", store=0)
  
