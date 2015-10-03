@@ -120,7 +120,7 @@ def glad_button():
 
 def bounty_button():
     single_speaker_on(KIDROOM)
-    d = dateime.now()
+    d = datetime.now()
     if d.hour < 19:
         start_playlist('Anna dance')
     else:
@@ -162,6 +162,7 @@ def button_event(hw_addr):
     if name is 'bounty':
         bounty_button()
 
+    return make_response('OK')
 
 ###
 if __name__ == '__main__':
