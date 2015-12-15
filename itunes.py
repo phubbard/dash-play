@@ -25,6 +25,7 @@ ITUNES = config.get('itunes', 'api_url')
 # Button MAC addresses
 buttons = {config.get('buttons', 'glad'): 'glad',
            config.get('buttons', 'bounty') : 'bounty',
+           config.get('buttons', 'ziploc') : 'ziploc',
            config.get('buttons', 'tide'): 'tide'}
 
 # AirPort speaker names
@@ -132,6 +133,15 @@ def tide_button():
     start_playlist('Basic rock')
 
 
+def ziploc_button():
+    single_speaker_on(KIDROOM)
+    d = datetime.now()
+    if d.hour < 19:
+        start_playlist('Margaret dance')
+    else:
+        start_playlist('Bed')
+
+
 def lookup_button(hw_addr):
     if buttons.has_key(hw_addr):
         return buttons[hw_addr]
@@ -145,7 +155,7 @@ def button_event(hw_addr):
 
     name = lookup_button(hw_addr)
     if not name:
-        log.warn('Ignoring unknown address')
+        log.warn('Ignoring unknown address '+ hw_addr)
         return make_response('Ignored')
 
     log.info('Got button event for ' + hw_addr + ' -> ' + name)
@@ -161,6 +171,8 @@ def button_event(hw_addr):
         tide_button()
     if name is 'bounty':
         bounty_button()
+    if name is 'ziploc':
+        ziploc_button()
 
     return make_response('OK')
 
