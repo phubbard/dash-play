@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from ConfigParser import SafeConfigParser
 
-from flask import Flask, make_response
+from flask import Flask, make_response, request
 
 import requests
 
@@ -26,7 +26,8 @@ ITUNES = config.get('itunes', 'api_url')
 buttons = {config.get('buttons', 'glad'): 'glad',
            config.get('buttons', 'bounty') : 'bounty',
            config.get('buttons', 'ziploc') : 'ziploc',
-           config.get('buttons', 'tide'): 'tide'}
+           config.get('buttons', 'tide'): 'tide',
+           config.get('buttons', 'iot'): 'iot'}
 
 # AirPort speaker names
 KITCHEN = 'Kitchen'
@@ -118,7 +119,19 @@ def glad_button():
         log.info('Glad pressed, later, starting evening playlist')
         start_playlist('Dishes')
     
+# The IoT button, calling from Lambda, also can do short/long/double clicks. Cool.
+def iot_button(type):
 
+    log.info('iot type ' + type)
+    single_speaker_on(KITCHEN)
+
+    if type == 'SINGLE':
+        start_playlist('Dishes')
+    if type == 'DOUBLE':
+        start_playlist('Singalong')
+    if type == 'LONG':
+        start_playlist('Calm classical')
+        
 def bounty_button():
     single_speaker_on(KIDROOM)
     d = datetime.now()
@@ -158,6 +171,10 @@ def button_event(hw_addr):
         log.warn('Ignoring unknown address '+ hw_addr)
         return make_response('Ignored')
 
+    type = request.args.get('type') 
+    if type == None:
+        type = 'none'
+
     log.info('Got button event for ' + hw_addr + ' -> ' + name)
 
     if is_playing():
@@ -173,6 +190,8 @@ def button_event(hw_addr):
         bounty_button()
     if name is 'ziploc':
         ziploc_button()
+    if name is 'iot':
+        iot_button(type)
 
     return make_response('OK')
 
