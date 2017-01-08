@@ -53,6 +53,21 @@ def stop():
     requests.put(ITUNES + '/stop')
 
 
+def pause():
+    log.info('Pausing playback')
+    requests.put(ITUNES + '/pause')
+
+
+def next():
+    log.info('Next track')
+    requests.put(ITUNES + '/next')
+
+
+def previous():
+    log.info('Previous track')
+    requests.put(ITUNES + '/previous')
+
+
 def find_speaker_id(speaker_name):
     rv = requests.get(ITUNES + '/airplay_devices')
     jlist = rv.json()['airplay_devices']
@@ -117,16 +132,27 @@ def glad_button():
         start_playlist('APM')
     else:
         log.info('Glad pressed, later, starting evening playlist')
-        start_playlist('Dishes')
+        start_playlist('dishes')
     
 # The IoT button, calling from Lambda, also can do short/long/double clicks. Cool.
 def iot_button(type):
 
     log.info('iot type ' + type)
-    single_speaker_on(KITCHEN)
+    #single_speaker_on(KITCHEN)
 
+    if is_playing():
+        if type == 'SINGLE':
+            pause()
+        if type == 'DOUBLE':
+            next()
+        if type == 'LONG':
+            previous()
+
+        return
+
+    # Stopped or paused
     if type == 'SINGLE':
-        start_playlist('Dishes')
+        start_playlist('dishes')
     if type == 'DOUBLE':
         start_playlist('Singalong')
     if type == 'LONG':
@@ -178,8 +204,8 @@ def button_event(hw_addr):
     log.info('Got button event for ' + hw_addr + ' -> ' + name)
 
     if is_playing():
-        stop()
-        return make_response('Stopping')
+        pause()
+        return make_response('Pausing')
 
     # TODO roll into a dictionary
     if name is 'glad':
