@@ -58,6 +58,11 @@ def pause():
     requests.put(ITUNES + '/pause')
 
 
+def playpause():
+    log.info('Play/pause toggle')
+    requests.put(ITUNES + '/playpause')
+
+
 def next():
     log.info('Next track')
     requests.put(ITUNES + '/next')
@@ -140,9 +145,11 @@ def iot_button(type):
     log.info('iot type ' + type)
     #single_speaker_on(KITCHEN)
 
+    if type == 'SINGLE':
+        playpause()
+        return
+
     if is_playing():
-        if type == 'SINGLE':
-            pause()
         if type == 'DOUBLE':
             next()
         if type == 'LONG':
@@ -151,8 +158,6 @@ def iot_button(type):
         return
 
     # Stopped or paused
-    if type == 'SINGLE':
-        start_playlist('dishes')
     if type == 'DOUBLE':
         start_playlist('Singalong')
     if type == 'LONG':
